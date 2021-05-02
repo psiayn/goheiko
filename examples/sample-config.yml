@@ -1,0 +1,52 @@
+nodes:
+  - name: node1
+    host: IP
+    username: ssh_username
+    port: 22
+    password: ssh_password
+  - name: node2
+    host: IP
+    username: ssh_username
+    port: 8022
+    password: ssh_password
+  - name: node3
+    host: host_name
+    username: ssh_username
+
+jobs:
+  - name: job_1
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
+  - name: job_2
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
+  - name: job_3
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
+  - name: job_4
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
+  - name: job_5
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
+  - name: job_6
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
