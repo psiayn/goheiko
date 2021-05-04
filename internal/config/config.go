@@ -1,10 +1,24 @@
-package utils
+package config
 
 import (
 	"fmt"
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 )
+
+type Node struct {
+	Name string
+	Host string
+	Username string
+	Password string
+	Port int
+}
+
+type Task struct {
+	Name string
+	Init []string
+	Commands []string
+}
 
 type Config struct {
 	Nodes []Node

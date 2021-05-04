@@ -1,4 +1,4 @@
-module github.com/psiayn/goheiko
+module github.com/psiayn/heiko
 
 go 1.16
 
