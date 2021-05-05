@@ -2,9 +2,10 @@ package connection
 
 import (
 	"fmt"
-	"os"
-	"golang.org/x/crypto/ssh"
 	"github.com/psiayn/heiko/internal/config"
+	"golang.org/x/crypto/ssh"
+	"os"
+	"strings"
 )
 
 func Connect(node config.Node, task config.Task) {
@@ -12,39 +13,40 @@ func Connect(node config.Node, task config.Task) {
 		User: node.Username,
 		Auth: []ssh.AuthMethod{ssh.Password(node.Password)},
 	}
-	f_name := "out_" + node.Name + "," + task.Name
-	f, e := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if e != nil {
-		fmt.Println("ERROR ", e)
+
+	f_name := "out_" + task.Name
+	f, err := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("ERROR while opening output file: ", err)
 		return
 	}
 	defer f.Close()
+
 	fmt.Println("Connecting to node .....")
 	sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-	client, err := ssh.Dial("tcp", node.Host, sshConfig)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%v:%v", node.Host, node.Port), sshConfig)
 	if err != nil {
-		fmt.Println("ERROR ", err)
+		fmt.Println("ERROR while connecting to node: ", err)
+		return
+	}
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		fmt.Println("ERROR while creating SSH session: ", err)
 		return
 	}
 
-	session, error := client.NewSession()
-	if error != nil {
-		fmt.Println("ERROR ", error)
-		client.Close()
+	combinedCommand := strings.Join(task.Commands, "; ")
+
+	out, err := session.CombinedOutput(combinedCommand)
+	if err != nil {
+		fmt.Println("ERROR while running command: ", err)
 		return
 	}
-	command := task.Commands[1]
-	out, er := session.CombinedOutput(command)
-	if er != nil {
-		fmt.Println("ERROR ", er)
-		client.Close()
+	_, err = f.Write(out)
+	if err != nil {
+		fmt.Println("ERROR while writing output to file: ", err)
 		return
 	}
-	_, errr := f.Write(out)
-	if errr != nil {
-		fmt.Println("ERROR ", er)
-		client.Close()
-		return
-	}
-	client.Close()
 }

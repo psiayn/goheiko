@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"github.com/psiayn/heiko/internal/config"
+	"github.com/psiayn/heiko/internal/scheduler"
 	"os"
 	"sync"
-	"fmt"
-	"github.com/psiayn/heiko/internal/scheduler"
-	"github.com/psiayn/heiko/internal/config"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	tasks := make(chan config.Task)
 	var wg sync.WaitGroup
 	wg.Add(len(task_arr))
-	go scheduler.Schedule(tasks, nodes, &wg)
+	go scheduler.RandomScheduler(tasks, nodes, &wg)
 	for _, task := range task_arr {
 		tasks <- task
 	}
