@@ -8,6 +8,7 @@ import (
 	"time"
 	"math/rand"
 	"github.com/psiayn/heiko/internal/config"
+	"github.com/psiayn/heiko/internal/connection"
 )
 
 func Schedule(tasks chan config.Task, nodes []config.Node, wg *sync.WaitGroup) {
@@ -15,8 +16,10 @@ func Schedule(tasks chan config.Task, nodes []config.Node, wg *sync.WaitGroup) {
 	for {
 		task := <- tasks
 		go func() {
-			fmt.Println(task, " on node ", nodes[rand.Intn(len(nodes))].Name)
+			node := nodes[rand.Intn(len(nodes))]
+			fmt.Println(task, " on node ", node.Name)
 			time.Sleep(10)
+			connection.Connect(node, task)
 			wg.Done()
 		}()
 	}

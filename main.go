@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"sync"
+	"fmt"
 	"github.com/psiayn/heiko/internal/scheduler"
 	"github.com/psiayn/heiko/internal/config"
 )
@@ -12,6 +13,7 @@ func main() {
 	configuration := config.ReadConfig(confPath)
 	task_arr := configuration.Jobs
 	nodes := configuration.Nodes
+	fmt.Println("len of nodes = ", len(task_arr))
 	tasks := make(chan config.Task)
 	var wg sync.WaitGroup
 	wg.Add(len(task_arr))
