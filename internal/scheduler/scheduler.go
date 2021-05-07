@@ -19,6 +19,12 @@ func RandomScheduler(tasks chan config.Task, nodes []config.Node, wg *sync.WaitG
 			node := nodes[rand.Intn(len(nodes))]
 			fmt.Println(task, " on node ", node.Name)
 			connection.Connect(node, task)
+
+			if task.Restart {
+				tasks <- task
+				wg.Add(1)
+			}
+
 			wg.Done()
 		}()
 	}
