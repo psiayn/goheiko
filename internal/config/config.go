@@ -12,7 +12,7 @@ type Node struct {
 	Host string
 	Username string
 	Password string
-	Port int
+	Port int `default:"22"`
 }
 
 type Task struct {
