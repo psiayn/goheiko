@@ -18,9 +18,11 @@ func RandomScheduler(tasks chan config.Task, nodes []config.Node, wg *sync.WaitG
 		go func() {
 			node := nodes[rand.Intn(len(nodes))]
 			log.Println("Running task: ", task, " on node ", node.Name)
-			connection.Connect(node, task)
 
-			if task.Restart {
+			err := connection.RunTask(node, task)
+
+			// if command errored out or is set to Restart, try running it again
+			if err != nil || task.Restart {
 				tasks <- task
 				wg.Add(1)
 			}

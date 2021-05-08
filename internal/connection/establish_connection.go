@@ -11,47 +11,61 @@ import (
 	"strings"
 )
 
-// TODO: return err from here, to see if it has to be run again
-// TODO: refactor this into functions
-func Connect(node config.Node, task config.Task) {
+func Connect(node config.Node) (*ssh.Client, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: node.Username,
 		Auth: []ssh.AuthMethod{ssh.Password(node.Password)},
 	}
-
-	f_name := filepath.Join(viper.GetString("dataLocation"), viper.GetString("name"), "out_"+task.Name)
-	f, err := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println("ERROR while opening output file: ", err)
-		return
-	}
-	defer f.Close()
 
 	log.Println("Connecting to node .....")
 	sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%v:%v", node.Host, node.Port), sshConfig)
 	if err != nil {
 		log.Println("ERROR while connecting to node: ", err)
-		return
+		return nil, err
+	}
+	// defer client.Close()
+	return client, nil
+}
+
+func RunTask(node config.Node, task config.Task) error {
+	// by default, this will be ~/.heiko/<name>/out_<task>
+	f_name := filepath.Join(
+		viper.GetString("dataLocation"),
+		viper.GetString("name"),
+		"out_"+task.Name)
+	f, err := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println("ERROR while opening output file: ", err)
+		return err
+	}
+	defer f.Close()
+
+	client, err := Connect(node)
+	if err != nil {
+		return err
 	}
 	defer client.Close()
 
 	session, err := client.NewSession()
 	if err != nil {
 		log.Println("ERROR while creating SSH session: ", err)
-		return
+		return err
 	}
 
+	// concatenate commands with semicolon
 	combinedCommand := strings.Join(task.Commands, "; ")
 
 	out, err := session.CombinedOutput(combinedCommand)
 	if err != nil {
 		log.Println("ERROR while running command: ", err)
-		return
+		return err
 	}
 	_, err = f.Write(out)
 	if err != nil {
 		log.Println("ERROR while writing output to file: ", err)
-		return
+		return err
 	}
+
+	return nil
 }
