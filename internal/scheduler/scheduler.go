@@ -3,7 +3,7 @@
 package scheduler
 
 import (
-	"fmt"
+	"log"
 	"github.com/psiayn/heiko/internal/config"
 	"github.com/psiayn/heiko/internal/connection"
 	"math/rand"
@@ -17,7 +17,7 @@ func RandomScheduler(tasks chan config.Task, nodes []config.Node, wg *sync.WaitG
 		task := <-tasks
 		go func() {
 			node := nodes[rand.Intn(len(nodes))]
-			fmt.Println(task, " on node ", node.Name)
+			log.Println("Running task: ", task, " on node ", node.Name)
 			connection.Connect(node, task)
 
 			if task.Restart {

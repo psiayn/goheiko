@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"fmt"
-	"sync"
-	"github.com/spf13/cobra"
-	"github.com/psiayn/heiko/internal/scheduler"
 	"github.com/psiayn/heiko/internal/config"
+	"github.com/psiayn/heiko/internal/scheduler"
+	"github.com/spf13/cobra"
+	"log"
+	"sync"
 )
 
 var startCmd = &cobra.Command{
@@ -15,7 +15,7 @@ var startCmd = &cobra.Command{
 		task_arr := configuration.Jobs
 		nodes := configuration.Nodes
 
-		fmt.Println("len of nodes = ", len(task_arr))
+		log.Println("len of nodes = ", len(task_arr))
 		tasks := make(chan config.Task)
 
 		var wg sync.WaitGroup

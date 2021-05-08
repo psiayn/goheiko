@@ -1,17 +1,18 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/creasty/defaults"
+	"github.com/psiayn/heiko/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/psiayn/heiko/internal/config"
-	"github.com/creasty/defaults"
 )
 
 // stores path of config file
 var configFile string
+
 // stores entire configuration
 var configuration config.Config
 
@@ -22,9 +23,6 @@ var rootCmd = &cobra.Command{
                 Raspberry Pis or mobile phones.
                 Made and maintained by PES Open Source.
                 More details available at https://github.com/pesos/heiko`,
-	// Run: func(cmd *cobra.Command, args []string) {
-	// 	// Do Stuff Here
-	// },
 }
 
 func Execute() {
@@ -56,17 +54,22 @@ func initConfig() {
 	viper.SetEnvPrefix("heiko")
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error in reading configuration file:", err)
-		os.Exit(1)
-	}
+	// data storage location - for logs, PID file, etc.
+	homeDir, err := os.UserHomeDir()
+	cobra.CheckErr(err)
+	dataLocation := filepath.Join(homeDir, ".heiko")
+	viper.SetDefault("dataLocation", dataLocation)
 
-	if err := viper.Unmarshal(&configuration); err != nil {
-		fmt.Fprintln(os.Stderr, "Error in reading configuration file:", err)
-		os.Exit(1)
-	}
+	err = viper.ReadInConfig()
+	cobra.CheckErr(err)
 
-	if err := defaults.Set(&configuration); err != nil {
-		panic(fmt.Errorf("panik: Could not set defaults %v", err))
-	}
+	err = viper.Unmarshal(&configuration)
+	cobra.CheckErr(err)
+
+	err = defaults.Set(&configuration)
+	cobra.CheckErr(err)
+
+	// ensure ~/.heiko/<name> exists
+	os.MkdirAll(filepath.Join(dataLocation, viper.GetString("name")),
+		os.ModePerm)
 }
