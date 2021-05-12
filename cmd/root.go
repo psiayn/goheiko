@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -41,6 +42,7 @@ func init() {
 	viper.BindPFlag("name", rootCmd.PersistentFlags().Lookup("name"))
 
 	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(initCmd)
 }
 
 func initConfig() {
@@ -60,14 +62,40 @@ func initConfig() {
 	dataLocation := filepath.Join(homeDir, ".heiko")
 	viper.SetDefault("dataLocation", dataLocation)
 
+	// read config from ~/.heiko/config.{whatever-extension}
 	err = viper.ReadInConfig()
 	cobra.CheckErr(err)
 
+	// unmarshalling is basically loading the data into our struct
+	// look at internal/config/config.go for the structure
 	err = viper.Unmarshal(&configuration)
 	cobra.CheckErr(err)
 
+	// set defaults using the "defaults" package
+	// look for `default:"something"` in
+	//    internal/config/config.go for the defaults
 	err = defaults.Set(&configuration)
 	cobra.CheckErr(err)
+
+	// we need to ensure that all commands run on the nodes
+	//   are run inside ~/.heiko/<name> directory
+	//   so that the home directory isn't polluted because of heiko
+	for i, job := range configuration.Jobs {
+		// when initializing, we create this directory (for each job)
+		//    and cd into it
+		cdCommand := fmt.Sprintf("cd ~/.heiko/%s", job.Name)
+		configuration.Jobs[i].Init = append([]string{
+			fmt.Sprintf("mkdir -p ~/.heiko/%s", job.Name),
+			cdCommand,
+		}, job.Init...)
+		// ^ this weird syntax above (and below) is for inserting elements
+		//     to the beginning of the slice
+
+		// when running, we only cd into it
+		configuration.Jobs[i].Commands = append([]string{
+			cdCommand,
+		}, job.Commands...)
+	}
 
 	// ensure ~/.heiko/<name> exists
 	os.MkdirAll(filepath.Join(dataLocation, viper.GetString("name")),

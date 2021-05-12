@@ -27,16 +27,16 @@ func Connect(node config.Node) (*ssh.Client, error) {
 	return client, nil
 }
 
-func RunTask(node config.Node, task config.Task) error {
+func RunTask(node config.Node, name string, commands []string) error {
 	// by default, this will be ~/.heiko/<name>/out_<task>
 	f_name := filepath.Join(
 		viper.GetString("dataLocation"),
 		viper.GetString("name"),
-		"out_"+task.Name,
+		"out_"+name,
 	)
 	f, err := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Println("ERROR while opening output file: ", err)
+		log.Println("ERROR while opening output file for task: ", err)
 		return err
 	}
 	defer f.Close()
@@ -54,7 +54,7 @@ func RunTask(node config.Node, task config.Task) error {
 	}
 
 	// concatenate commands with semicolon
-	combinedCommand := strings.Join(task.Commands, "; ")
+	combinedCommand := strings.Join(commands, "; ")
 
 	out, err := session.CombinedOutput(combinedCommand)
 	if err != nil {

@@ -3,9 +3,9 @@
 package scheduler
 
 import (
-	"log"
 	"github.com/psiayn/heiko/internal/config"
 	"github.com/psiayn/heiko/internal/connection"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -19,7 +19,7 @@ func RandomScheduler(tasks chan config.Task, nodes []config.Node, wg *sync.WaitG
 			node := nodes[rand.Intn(len(nodes))]
 			log.Println("Running task: ", task, " on node ", node.Name)
 
-			err := connection.RunTask(node, task)
+			err := connection.RunTask(node, task.Name, task.Commands)
 
 			// if command errored out or is set to Restart, try running it again
 			if err != nil || task.Restart {
