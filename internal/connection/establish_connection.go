@@ -24,7 +24,6 @@ func Connect(node config.Node) (*ssh.Client, error) {
 		log.Println("ERROR while connecting to node: ", err)
 		return nil, err
 	}
-	// defer client.Close()
 	return client, nil
 }
 
@@ -33,7 +32,8 @@ func RunTask(node config.Node, task config.Task) error {
 	f_name := filepath.Join(
 		viper.GetString("dataLocation"),
 		viper.GetString("name"),
-		"out_"+task.Name)
+		"out_"+task.Name,
+	)
 	f, err := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println("ERROR while opening output file: ", err)
