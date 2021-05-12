@@ -17,11 +17,11 @@ func Connect(node config.Node) (*ssh.Client, error) {
 		Auth: []ssh.AuthMethod{ssh.Password(node.Password)},
 	}
 
-	log.Println("Connecting to node .....")
+	log.Printf("Connecting to node %s .....", node.Name)
 	sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%v:%v", node.Host, node.Port), sshConfig)
 	if err != nil {
-		log.Println("ERROR while connecting to node: ", err)
+		log.Printf("ERROR while connecting to node %s: %v", node.Name, err)
 		return nil, err
 	}
 	return client, nil
@@ -36,7 +36,12 @@ func RunTask(node config.Node, name string, commands []string) error {
 	)
 	f, err := os.OpenFile(f_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Println("ERROR while opening output file for task: ", err)
+		log.Printf(
+			"ERROR (task: %s, node: %s) while opening output file: %v",
+			name,
+			node.Name,
+			err,
+		)
 		return err
 	}
 	defer f.Close()
@@ -49,7 +54,12 @@ func RunTask(node config.Node, name string, commands []string) error {
 
 	session, err := client.NewSession()
 	if err != nil {
-		log.Println("ERROR while creating SSH session: ", err)
+		log.Printf(
+			"ERROR (task: %s, node: %s) while creating SSH session: %v",
+			name,
+			node.Name,
+			err,
+		)
 		return err
 	}
 
@@ -58,12 +68,22 @@ func RunTask(node config.Node, name string, commands []string) error {
 
 	out, err := session.CombinedOutput(combinedCommand)
 	if err != nil {
-		log.Println("ERROR while running command: ", err)
+		log.Printf(
+			"ERROR (task: %s, node: %s) while running command: %v",
+			name,
+			node.Name,
+			err,
+		)
 		return err
 	}
 	_, err = f.Write(out)
 	if err != nil {
-		log.Println("ERROR while writing output to file: ", err)
+		log.Printf(
+			"ERROR (task: %s, node: %s) while writing output to file: %v",
+			name,
+			node.Name,
+			err,
+		)
 		return err
 	}
 

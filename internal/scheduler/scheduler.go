@@ -17,7 +17,7 @@ func RandomScheduler(tasks chan config.Task, nodes []config.Node, wg *sync.WaitG
 		task := <-tasks
 		go func() {
 			node := nodes[rand.Intn(len(nodes))]
-			log.Println("Running task: ", task, " on node ", node.Name)
+			log.Printf("Running task %s on node %s", task.Name, node.Name)
 
 			err := connection.RunTask(node, task.Name, task.Commands)
 
