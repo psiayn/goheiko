@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"log"
-	"path/filepath"
 	"sync"
 
 	"github.com/psiayn/heiko/internal/config"
 	"github.com/psiayn/heiko/internal/scheduler"
-	"github.com/sevlyar/go-daemon"
+	"github.com/psiayn/heiko/internal/daemon"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,36 +17,27 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		task_arr := configuration.Jobs
 		nodes := configuration.Nodes
-		workDir := filepath.Join(
-			viper.GetString("dataLocation"),
-			viper.GetString("name"),
-		)
-		if viper.GetBool("daemon") {
-			context := &daemon.Context{
-				PidFileName: filepath.Join(
-					workDir,
-					"daemon.pid",
-				),
-				PidFilePerm: 0644,
-				LogFileName: filepath.Join(
-					workDir,
-					"daemon.log",
-				),
-				LogFilePerm: 0644,
-				WorkDir:     ".",
-				Umask:       022,
-				// Args:        nil,
-				// Env:         nil,
-			}
 
+		// handle daemonizing now if required
+		if viper.GetBool("daemon") {
+			context := daemon.GetContext()
+
+			// this essentially forks the program from this point
+			// child is running as a daemon!
+			// d is nil in child and non-nil in parent
 			d, err := context.Reborn()
 			if err != nil {
 				log.Fatalln("Error while daemonizing!", err)
 				return
 			}
+
 			if d != nil {
+				// exit parent
 				return
 			}
+
+			// important - this releases the pidfile
+			//             once the program completes
 			defer context.Release()
 			log.Print("- - - - - - - - - - - - - - -")
 			log.Print("daemon started")

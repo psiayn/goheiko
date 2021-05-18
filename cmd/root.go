@@ -35,15 +35,19 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	// config file location
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is $PWD/.heiko/config.yaml)")
+
+	// the <name>
 	rootCmd.PersistentFlags().StringP("name", "n", "", "Unique name to give (or given) to this heiko job")
 	rootCmd.MarkPersistentFlagRequired("name")
-
 	viper.BindPFlag("name", rootCmd.PersistentFlags().Lookup("name"))
 
-	rootCmd.PersistentFlags().BoolP("daemon", "d", false, "Daemonizing heiko")
-	viper.BindPFlag("daemon", rootCmd.PersistentFlags().Lookup("daemon"))
+	// flags for daemonizing
+	startCmd.PersistentFlags().BoolP("daemon", "d", false, "Daemonizing heiko")
+	viper.BindPFlag("daemon", startCmd.PersistentFlags().Lookup("daemon"))
 
+	// add sub-commands here
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(initCmd)
 }
@@ -56,6 +60,8 @@ func initConfig() {
 		viper.SetConfigName("config")
 	}
 
+	// this makes viper look for environment
+	//  variables of the form HEIKO_SOMETHING
 	viper.SetEnvPrefix("heiko")
 	viper.AutomaticEnv()
 
