@@ -41,6 +41,9 @@ func init() {
 
 	viper.BindPFlag("name", rootCmd.PersistentFlags().Lookup("name"))
 
+	rootCmd.PersistentFlags().BoolP("daemon", "d", false, "Daemonizing heiko")
+	viper.BindPFlag("daemon", rootCmd.PersistentFlags().Lookup("daemon"))
+
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(initCmd)
 }
