@@ -44,7 +44,7 @@ You can also specify config manually.
 heiko start/init --config path/to/config
 ```
 
-You can initialize heiko, which for now runs the init jobs from your `config.yml`.
+You can initialize heiko, which for now runs the init jobs from your `config.yml`. More about the config can be found in [Wiki](https://github.com/psiayn/heiko/wiki).
 ```
 heiko init -n <name you want to give>
 ```
