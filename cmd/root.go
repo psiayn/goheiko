@@ -50,6 +50,7 @@ func init() {
 	// add sub-commands here
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(stopCmd)
 }
 
 func initConfig() {

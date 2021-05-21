@@ -34,9 +34,9 @@ func GetContext() *daemon.Context {
 		// WorkDir is set to the directory running heiko
 		//   this is needed to ensure that the config
 		//   file is read correctly
-		WorkDir:     ".",
+		WorkDir: ".",
 
-		Umask:       022,
+		Umask: 022,
 		// Args:        nil,
 		// Env:         nil,
 	}
