@@ -4,6 +4,7 @@ import (
 	"log"
 	"sync"
 
+	goDaemon "github.com/sevlyar/go-daemon"
 	"github.com/psiayn/heiko/internal/config"
 	"github.com/psiayn/heiko/internal/daemon"
 	"github.com/psiayn/heiko/internal/scheduler"
@@ -48,11 +49,28 @@ var startCmd = &cobra.Command{
 
 		var wg sync.WaitGroup
 		wg.Add(len(task_arr))
-		go scheduler.RandomScheduler(tasks, nodes, &wg)
+
+		// see scheduler.Stops and scheduler.Dones for descriptions of these
+		stop := make(chan struct{})
+		done := make(chan struct{})
+		scheduler.Stops = append(scheduler.Stops, stop)
+		scheduler.Dones = append(scheduler.Dones, done)
+
+		go scheduler.RandomScheduler(tasks, stop, done, nodes, &wg)
+
+		// add tasks to the task channel
 		for _, task := range task_arr {
 			tasks <- task
 		}
-		wg.Wait()
 
+		// Starts signal handlers
+		//   this blocks until a signal (which we are listening for)
+		//   is received.
+		if err := goDaemon.ServeSignals(); err != nil {
+			log.Printf("Error in serving signals: %s", err.Error())
+		}
+
+		// we reached   T H E    E N D
+		log.Println("Heiko daemon terminated")
 	},
 }

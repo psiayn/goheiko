@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"log"
-	"syscall"
 
+	goDaemon "github.com/sevlyar/go-daemon"
 	"github.com/psiayn/heiko/internal/daemon"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var stopCmd = &cobra.Command{
@@ -13,13 +14,12 @@ var stopCmd = &cobra.Command{
 	Short: "Stops a running heiko daemon",
 	Run: func(cmd *cobra.Command, args []string) {
 		context := daemon.GetContext()
+
 		// searching if daemon exists
 		process, err := context.Search()
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalf("Could not find daemon %s: %v", viper.GetString("name"), err)
 		}
-		process.Signal(syscall.SIGTERM)
-		defer context.Release()
-
+		goDaemon.SendCommands(process)
 	},
 }
