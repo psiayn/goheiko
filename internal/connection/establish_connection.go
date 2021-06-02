@@ -2,19 +2,20 @@ package connection
 
 import (
 	"fmt"
-	"github.com/psiayn/heiko/internal/config"
-	"github.com/spf13/viper"
-	"golang.org/x/crypto/ssh"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/psiayn/heiko/internal/config"
+	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh"
 )
 
 func Connect(node config.Node) (*ssh.Client, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: node.Username,
-		Auth: []ssh.AuthMethod{ssh.Password(node.Password)},
+		Auth: []ssh.AuthMethod{ssh.Password(node.Auth.Password)},
 	}
 
 	log.Printf("Connecting to node %s .....", node.Name)

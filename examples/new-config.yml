@@ -1,0 +1,24 @@
+nodes:
+  - name: node1
+    host: IP
+    username: ssh_username
+    port: 22
+    auth:
+      method: password
+      password: ssh_password
+  - name: node2
+    host: IP
+    username: ssh_username
+    port: 8022
+    auth:
+      method: keys
+      keys:
+        path: /home/user/.ssh/id_rsa
+
+jobs:
+  - name: job_1
+    init:
+      - "touch init.txt"
+    commands:
+      - "cd ~/Downloads"
+      - "touch sample.txt"
