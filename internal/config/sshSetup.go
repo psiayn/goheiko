@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -53,6 +54,39 @@ func createKeyPair(privateKeyPath, publicKeyPath string) error {
 	}
 
 	return nil
+}
+
+func knownHost(host string, port int) bool {
+	var output []byte
+	var err error
+
+	if port != 22 {
+		output, err = exec.Command("ssh-keygen", "-H", "-F", fmt.Sprintf("%s:%d", host, port)).CombinedOutput()
+	} else {
+		output, err = exec.Command("ssh-keygen", "-H", "-F", host).CombinedOutput()
+	}
+
+	if err.Error() == "exit status 1" && len(output) > 0 {
+		return true
+	}
+
+	return false
+}
+
+func transferKey(keyPath, username, host string, port int) error {
+	command := exec.Command(
+		"ssh-copy-id",
+		"-i",
+		keyPath,
+		fmt.Sprintf("%s@%s", username, host),
+		"-p",
+		fmt.Sprintf("%d", port),
+	)
+	command.Stdin = os.Stdin
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+
+	return command.Run()
 }
 
 func SetAuth(configuration *Config) error {
@@ -126,8 +160,13 @@ func SetAuth(configuration *Config) error {
 			}
 			configuration.Nodes[i].Auth.Keys.PrivateKey = privateKey
 
-		case "PASSWORD":
-			// Nothing to do in this case right?
+			// Transfer Key if node not is not a known host
+			if !knownHost(node.Host, node.Port) {
+				err := transferKey(privateKeyPath, node.Username, node.Host, node.Port)
+				if err != nil {
+					return fmt.Errorf("key transfer: %v", err)
+				}
+			}
 		}
 	}
 	return nil
