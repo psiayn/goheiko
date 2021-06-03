@@ -36,6 +36,11 @@ func createKeyPair(privateKeyPath, publicKeyPath string) error {
 		return err
 	}
 
+	// Set permissions to private key
+	if err = os.Chmod(privateKeyPath, 0400); err != nil {
+		return err
+	}
+
 	// Generate and write public key
 	pub, err := ssh.NewPublicKey(&privateKey.PublicKey)
 	if err != nil {
@@ -46,6 +51,7 @@ func createKeyPair(privateKeyPath, publicKeyPath string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

@@ -13,22 +13,40 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func publicKey(path string) ssh.AuthMethod {
+func publicKey(path string) []ssh.AuthMethod {
+	if path == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
+		}
+		path = filepath.Join(home, ".ssh/heiko/key")
+	}
+
 	key, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return []ssh.AuthMethod{}
 	}
+
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		panic(err)
+		return []ssh.AuthMethod{}
 	}
-	return ssh.PublicKeys(signer)
+
+	return []ssh.AuthMethod{ssh.PublicKeys(signer)}
 }
 
 func Connect(node config.Node) (*ssh.Client, error) {
+
 	sshConfig := &ssh.ClientConfig{
 		User: node.Username,
-		Auth: []ssh.AuthMethod{publicKey(node.Auth.Keys.Path)},
+	}
+
+	switch strings.ToUpper(node.Auth.Method) {
+	case "PASSWORD":
+		sshConfig.Auth = []ssh.AuthMethod{ssh.Password(node.Auth.Password)}
+
+	case "KEYS":
+		sshConfig.Auth = publicKey(node.Auth.Keys.Path)
 	}
 
 	log.Printf("Connecting to node %s .....", node.Name)

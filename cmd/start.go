@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/psiayn/heiko/internal/config"
-	"github.com/psiayn/heiko/internal/scheduler"
 	"github.com/psiayn/heiko/internal/daemon"
+	"github.com/psiayn/heiko/internal/scheduler"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
