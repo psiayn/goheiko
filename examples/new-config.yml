@@ -14,6 +14,12 @@ nodes:
       method: keys
       keys:
         path: /home/user/.ssh/id_rsa
+  - name: node3
+    host: IP
+    username: ssh_username
+    port: 8022
+    auth:
+      method: keys
 
 jobs:
   - name: job_1
