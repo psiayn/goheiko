@@ -15,51 +15,37 @@ import (
 )
 
 func createKeyPair(privateKeyPath, publicKeyPath string) error {
-	// generate key
-	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return fmt.Errorf("cannot generate RSA key: %s", err)
+		return err
 	}
-	publickey := &privatekey.PublicKey
 
-	// dump private key to file
-	var privateKeyBytes []byte = x509.MarshalPKCS1PrivateKey(privatekey)
-	privateKeyBlock := &pem.Block{
+	// Generate and write private key as PEM
+	privateKeyFile, err := os.Create(privateKeyPath)
+	if err != nil {
+		return err
+	}
+	defer privateKeyFile.Close()
+
+	privateKeyPEM := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
-		Bytes: privateKeyBytes,
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	}
 
-	privatePem, err := os.Create(privateKeyPath)
+	if err := pem.Encode(privateKeyFile, privateKeyPEM); err != nil {
+		return err
+	}
+
+	// Generate and write public key
+	pub, err := ssh.NewPublicKey(&privateKey.PublicKey)
 	if err != nil {
-		return fmt.Errorf("create private key: %s", err)
+		return err
 	}
 
-	err = pem.Encode(privatePem, privateKeyBlock)
+	err = ioutil.WriteFile(publicKeyPath, ssh.MarshalAuthorizedKey(pub), 0400)
 	if err != nil {
-		return fmt.Errorf("encode private key: %s", err)
+		return err
 	}
-
-	// dump public key to file
-	publicKeyBytes, err := x509.MarshalPKIXPublicKey(publickey)
-	if err != nil {
-		return fmt.Errorf("dumping publickey: %s", err)
-	}
-
-	publicKeyBlock := &pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: publicKeyBytes,
-	}
-
-	publicPem, err := os.Create(publicKeyPath)
-	if err != nil {
-		return fmt.Errorf("create public key: %s", err)
-	}
-
-	err = pem.Encode(publicPem, publicKeyBlock)
-	if err != nil {
-		return fmt.Errorf("encode public key: %s", err)
-	}
-
 	return nil
 }
 
@@ -98,7 +84,7 @@ func SetAuth(configuration *Config) error {
 				publicKeyPath = node.Auth.Keys.Path + ".pub"
 				privateKeyPath = node.Auth.Keys.Path
 			} else {
-				configuration.Nodes[i].Auth.Keys.Path = defaultKeyPath
+				configuration.Nodes[i].Auth.Keys.Path = privateKeyPath
 			}
 
 			// Validate that keys exist

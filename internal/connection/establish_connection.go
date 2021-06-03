@@ -2,6 +2,7 @@ package connection
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,10 +13,22 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+func publicKey(path string) ssh.AuthMethod {
+	key, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		panic(err)
+	}
+	return ssh.PublicKeys(signer)
+}
+
 func Connect(node config.Node) (*ssh.Client, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: node.Username,
-		Auth: []ssh.AuthMethod{ssh.Password(node.Auth.Password)},
+		Auth: []ssh.AuthMethod{publicKey(node.Auth.Keys.Path)},
 	}
 
 	log.Printf("Connecting to node %s .....", node.Name)
