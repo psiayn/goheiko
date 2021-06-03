@@ -70,8 +70,8 @@ func SetAuth(configuration *Config) error {
 		return fmt.Errorf("init: UserHomeDir: %v", err.Error())
 	}
 
-	keyPath := filepath.Join(homePath, ".ssh/heiko")
-	privateKeyPath := filepath.Join(keyPath, "key")
+	defaultKeyPath := filepath.Join(homePath, ".ssh/heiko")
+	privateKeyPath := filepath.Join(defaultKeyPath, "key")
 	publicKeyPath := privateKeyPath + ".pub"
 
 	// Validate that keys exist
@@ -80,8 +80,8 @@ func SetAuth(configuration *Config) error {
 
 	// Create fresh keys if either don't exist
 	if err1 != nil || err2 != nil {
-		os.RemoveAll(keyPath)
-		os.Mkdir(keyPath, 0755)
+		os.RemoveAll(defaultKeyPath)
+		os.Mkdir(defaultKeyPath, 0755)
 
 		err := createKeyPair(privateKeyPath, publicKeyPath)
 		if err != nil {
@@ -97,6 +97,8 @@ func SetAuth(configuration *Config) error {
 			if node.Auth.Keys.Path != "" {
 				publicKeyPath = node.Auth.Keys.Path + ".pub"
 				privateKeyPath = node.Auth.Keys.Path
+			} else {
+				configuration.Nodes[i].Auth.Keys.Path = defaultKeyPath
 			}
 
 			// Validate that keys exist
