@@ -80,6 +80,7 @@ func transferKey(keyPath, username, host string, port int) error {
 		keyPath,
 		"-p",
 		fmt.Sprintf("%d", port),
+		"-o IdentitiesOnly=yes",
 		fmt.Sprintf("%s@%s", username, host),
 	)
 
