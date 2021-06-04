@@ -78,9 +78,10 @@ func transferKey(keyPath, username, host string, port int) error {
 		"ssh-copy-id",
 		"-i",
 		keyPath,
-		fmt.Sprintf("%s@%s", username, host),
 		"-p",
 		fmt.Sprintf("%d", port),
+		fmt.Sprintf("%s@%s", username, host),
+	)
 	)
 	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout
