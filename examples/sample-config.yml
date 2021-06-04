@@ -3,15 +3,27 @@ nodes:
     host: IP
     username: ssh_username
     port: 22
-    password: ssh_password
+    auth:
+      method: keys
+      keys:
+        path: /path/to/keys
   - name: node2
     host: IP
     username: ssh_username
     port: 8022
-    password: ssh_password
+    auth:
+      method: keys
   - name: node3
-    host: host_name
+    host: IP
     username: ssh_username
+    port: 8022
+    auth:
+      method: password
+      password: ssh_password
+  - name: node4
+    host: IP
+    username: ssh_username
+    port: 22
 
 jobs:
   - name: job_1

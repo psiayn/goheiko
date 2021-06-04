@@ -45,7 +45,7 @@ func Connect(node config.Node) (*ssh.Client, error) {
 	case "PASSWORD":
 		sshConfig.Auth = []ssh.AuthMethod{ssh.Password(node.Auth.Password)}
 
-	case "KEYS":
+	default:
 		sshConfig.Auth = publicKey(node.Auth.Keys.Path)
 	}
 

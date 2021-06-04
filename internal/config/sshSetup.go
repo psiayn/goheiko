@@ -82,7 +82,7 @@ func transferKey(keyPath, username, host string, port int) error {
 		fmt.Sprintf("%d", port),
 		fmt.Sprintf("%s@%s", username, host),
 	)
-	)
+
 	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
@@ -118,8 +118,10 @@ func SetAuth(configuration *Config) error {
 
 	for i, node := range configuration.Nodes {
 		switch strings.ToUpper(node.Auth.Method) {
-		case "KEYS":
+		case "PASSWORD":
+			// If Authentication method is password, no INIT required.
 
+		default:
 			// Set custom key if specified
 			if node.Auth.Keys.Path != "" {
 				publicKeyPath = node.Auth.Keys.Path + ".pub"
