@@ -1,12 +1,10 @@
-Heiko
-=====
+# Heiko
 
 Heiko rewritten in go!
 
 Heiko is a lightweight distributed node manager ( at least aims to be that ).
 
-Installation
-------------
+## Installation
 
 ### Using Go Get
 
@@ -22,8 +20,7 @@ cd heiko
 go install .
 ```
 
-Usage
------
+## Usage
 
 General overview.
 
