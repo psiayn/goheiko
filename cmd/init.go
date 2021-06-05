@@ -1,17 +1,24 @@
 package cmd
 
 import (
+	"log"
+	"sync"
+
 	"github.com/psiayn/heiko/internal/config"
 	"github.com/psiayn/heiko/internal/connection"
 	"github.com/spf13/cobra"
-	"log"
-	"sync"
 )
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Runs initialization of Jobs",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		err := config.SetAuth(&configuration)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		jobs := configuration.Jobs
 		nodes := configuration.Nodes
 

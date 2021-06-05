@@ -2,19 +2,51 @@ package connection
 
 import (
 	"fmt"
-	"github.com/psiayn/heiko/internal/config"
-	"github.com/spf13/viper"
-	"golang.org/x/crypto/ssh"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/psiayn/heiko/internal/config"
+	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh"
 )
 
+func publicKey(path string) []ssh.AuthMethod {
+	if path == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
+		}
+		path = filepath.Join(home, ".ssh/heiko/key")
+	}
+
+	key, err := ioutil.ReadFile(path)
+	if err != nil {
+		return []ssh.AuthMethod{}
+	}
+
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		return []ssh.AuthMethod{}
+	}
+
+	return []ssh.AuthMethod{ssh.PublicKeys(signer)}
+}
+
 func Connect(node config.Node) (*ssh.Client, error) {
+
 	sshConfig := &ssh.ClientConfig{
 		User: node.Username,
-		Auth: []ssh.AuthMethod{ssh.Password(node.Password)},
+	}
+
+	switch strings.ToUpper(node.Auth.Method) {
+	case "PASSWORD":
+		sshConfig.Auth = []ssh.AuthMethod{ssh.Password(node.Auth.Password)}
+
+	default:
+		sshConfig.Auth = publicKey(node.Auth.Keys.Path)
 	}
 
 	log.Printf("Connecting to node %s .....", node.Name)
