@@ -52,10 +52,10 @@ LOOP:
 
 			case <-stop:  // got the signal to stop :(
 
-			// only exit once all tasks are done.
-			//   this is needed because the tasks run in separate goroutines
-			// TODO: this will block for commands that never exit. Ex: `cat`
-			wg.Wait()
+			// breaks out of the loop
+			// this means that the goroutines run above are not waited for
+			//   so, when the daemon exits the SSH connections are broken
+			//   with no chance for graceful exit
 
 			break LOOP
 		}
