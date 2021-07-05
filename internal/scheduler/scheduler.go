@@ -11,6 +11,9 @@ import (
 	"time"
 )
 
+// time in seconds to wait for running tasks to finish
+const Timeout = 2
+
 // these channels (one for each running scheduler) tell the scheduler to exit.
 //   when you pass a struct{}{} to this channel, the scheduler(s) exits
 var Stops = make([]chan struct{}, 0)
@@ -52,10 +55,33 @@ LOOP:
 
 			case <-stop:  // got the signal to stop :(
 
-			// breaks out of the loop
-			// this means that the goroutines run above are not waited for
-			//   so, when the daemon exits the SSH connections are broken
-			//   with no chance for graceful exit
+			// wait for tasks to finish using the wg
+			// a signal is sent on ch when they finish
+			ch := make(chan struct{})
+			go func() {
+				wg.Wait()
+				close(ch)
+			}()
+
+			DRAIN:
+			for {
+					select {
+					case <-tasks:
+						// tasks remaining in the queue are drained
+						//  and marked as done
+						wg.Done()
+
+					case <-time.After(time.Second*Timeout):
+						// after timeout, just stop. existing connections will break.
+						log.Println("Stopping scheduler after timeout, some tasks were still executing")
+						break DRAIN
+
+					case <-ch:
+						// all done. clean exit.
+						log.Println("All running tasks finished execution")
+						break DRAIN
+					}
+			}
 
 			break LOOP
 		}

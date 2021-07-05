@@ -20,6 +20,9 @@ var stopCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Could not find daemon %s: %v", viper.GetString("name"), err)
 		}
-		goDaemon.SendCommands(process)
+		err = goDaemon.SendCommands(process)
+		if err != nil {
+			log.Fatalf("Could not stop daemon %s: %v", viper.GetString("name"), err)
+		}
 	},
 }
