@@ -4,10 +4,10 @@ import (
 	"log"
 	"sync"
 
-	goDaemon "github.com/sevlyar/go-daemon"
 	"github.com/psiayn/heiko/internal/config"
 	"github.com/psiayn/heiko/internal/daemon"
 	"github.com/psiayn/heiko/internal/scheduler"
+	goDaemon "github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

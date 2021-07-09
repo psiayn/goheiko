@@ -3,8 +3,8 @@ package cmd
 import (
 	"log"
 
-	goDaemon "github.com/sevlyar/go-daemon"
 	"github.com/psiayn/heiko/internal/daemon"
+	goDaemon "github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
