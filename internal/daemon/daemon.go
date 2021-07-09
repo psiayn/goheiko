@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"path/filepath"
+	"syscall"
 
 	"github.com/sevlyar/go-daemon"
 	"github.com/spf13/viper"
@@ -11,6 +12,8 @@ import (
 //  based on the program name
 //  (which is taken from viper)
 func GetContext() *daemon.Context {
+	SetHandlers(true)
+
 	// by default this is ~/.heiko/<name>
 	workDir := filepath.Join(
 		viper.GetString("dataLocation"),
@@ -42,4 +45,10 @@ func GetContext() *daemon.Context {
 	}
 
 	return context
+}
+
+// sets up signal handlers as in the example
+// given in https://github.com/sevlyar/go-daemon/blob/3fdf7dcbb9d92331eaa91e649c4755da76c64382/examples/cmd/gd-signal-handling/signal-handling.go#L21
+func SetHandlers(quit bool) {
+	daemon.AddCommand(daemon.BoolFlag(&quit), syscall.SIGINT, stopHandler)
 }
