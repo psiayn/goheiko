@@ -107,6 +107,9 @@ func SetAuth(configuration *Config) error {
 
 		default:
 			// Set custom key if specified
+			if strings.HasPrefix(node.Auth.Keys.Path, "~") {
+				node.Auth.Keys.Path = strings.Replace(node.Auth.Keys.Path, "~", homePath, 1)
+			}
 			if node.Auth.Keys.Path != "" {
 				publicKeyPath = node.Auth.Keys.Path + ".pub"
 				privateKeyPath = node.Auth.Keys.Path
