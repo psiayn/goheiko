@@ -22,6 +22,14 @@ func publicKey(path string) []ssh.AuthMethod {
 		path = filepath.Join(home, ".ssh/heiko/key")
 	}
 
+	if strings.HasPrefix(path, "~") {
+		homePath, err := os.UserHomeDir()
+		if err != nil {
+			return []ssh.AuthMethod{}
+		}
+		path = strings.Replace(path, "~", homePath, 1)
+	}
+
 	key, err := ioutil.ReadFile(path)
 	if err != nil {
 		return []ssh.AuthMethod{}
